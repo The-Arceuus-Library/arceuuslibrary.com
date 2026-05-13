@@ -8,7 +8,6 @@ import HeaderLink from './HeaderLink.astro';
 		<h2><a href="/">{SITE_TITLE}</a></h2>
 		<div class="internal-links">
 			<HeaderLink href="/">Home</HeaderLink>
-			<HeaderLink href="/about">About</HeaderLink>
 		</div>
 		<div class="social-links">
 			<a href="https://x.com/ArceuusLibrary" target="_blank">
@@ -62,9 +61,12 @@ import HeaderLink from './HeaderLink.astro';
 		text-shadow: 0 0 24px var(--accent-glow);
 	}
 	nav {
-		display: flex;
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
-		justify-content: space-between;
+	}
+	.social-links {
+		justify-self: end;
 	}
 	nav a {
 		padding: 1em 0.6em;
