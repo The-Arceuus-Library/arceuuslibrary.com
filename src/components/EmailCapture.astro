@@ -1,0 +1,143 @@
+---
+const KIT_FORM_URL = 'https://app.kit.com/forms/9436231/subscriptions';
+---
+
+<div class="email-capture">
+	<p class="invite">Leave your email address to be notified when new volumes hit the shelves.</p>
+	<form id="kit-form" novalidate>
+		<div class="field">
+			<input
+				type="email"
+				name="email_address"
+				id="email-input"
+				placeholder="your@email.com"
+				autocomplete="email"
+				required
+			/>
+			<button type="submit">Notify me</button>
+		</div>
+		<p class="status" aria-live="polite"></p>
+	</form>
+</div>
+
+<script define:vars={{ KIT_FORM_URL }}>
+	const form = document.getElementById('kit-form');
+	const status = form.querySelector('.status');
+
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const email = form.querySelector('#email-input').value.trim();
+		if (!email) return;
+
+		const btn = form.querySelector('button');
+		btn.disabled = true;
+		btn.textContent = 'Sending…';
+		status.textContent = '';
+		status.className = 'status';
+
+		try {
+			const body = new URLSearchParams({ email_address: email });
+			const res = await fetch(KIT_FORM_URL, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				body,
+			});
+
+			const data = await res.json().catch(() => null);
+			console.log('[kit]', res.status, data);
+
+			if (!res.ok || data?.error) throw new Error(data?.error ?? `HTTP ${res.status}`);
+
+			form.querySelector('#email-input').value = '';
+			status.textContent = 'Confirmation email sent! Please check your inbox and verify your email to join the newsletter.';
+			status.classList.add('success');
+		} catch {
+			status.textContent = 'Something went wrong. Please try again later.';
+			status.classList.add('error');
+		} finally {
+			btn.disabled = false;
+			btn.textContent = 'Notify me';
+		}
+	});
+</script>
+
+<style>
+	.email-capture {
+		margin: 3em auto;
+		max-width: 520px;
+		text-align: center;
+		padding: 2em;
+		border: 1px solid rgba(var(--gray-light), 0.12);
+		background: rgba(var(--gray-dark), 0.4);
+	}
+
+	.invite {
+		font-family: var(--font-body);
+		font-style: italic;
+		font-size: 1.05em;
+		color: rgb(var(--gray-light));
+		margin: 0 0 1.25em;
+	}
+
+	.field {
+		display: flex;
+	}
+
+	input[type="email"] {
+		flex: 1;
+		padding: 0.6em 0.9em;
+		font-family: var(--font-body);
+		font-size: 0.95em;
+		background: rgba(var(--black), 0.8);
+		color: rgb(var(--gray-light));
+		border: 1px solid rgba(var(--gray-light), 0.2);
+		border-right: none;
+		outline: none;
+		transition: border-color 200ms;
+	}
+
+	input[type="email"]:focus {
+		border-color: var(--accent);
+		box-shadow: 0 0 0 1px var(--accent), 0 0 14px var(--accent-glow);
+	}
+
+	input[type="email"]::placeholder {
+		color: rgb(var(--gray));
+		opacity: 0.7;
+	}
+
+	button {
+		padding: 0.6em 1.2em;
+		font-family: var(--font-display);
+		font-size: 0.75em;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		background: var(--accent-dark);
+		color: rgb(var(--gray-light));
+		border: 1px solid var(--accent-dark);
+		cursor: pointer;
+		transition: background 200ms, color 200ms, box-shadow 200ms;
+		white-space: nowrap;
+	}
+
+	button:hover:not(:disabled) {
+		background: var(--accent);
+		color: rgb(var(--black));
+		box-shadow: 0 0 16px var(--accent-glow);
+	}
+
+	button:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+
+	.status {
+		margin: 0.75em 0 0;
+		font-size: 0.9em;
+		font-style: italic;
+		min-height: 1.4em;
+	}
+
+	.status.success { color: var(--accent); }
+	.status.error   { color: #c0504a; }
+</style>
